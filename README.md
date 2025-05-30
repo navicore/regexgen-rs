@@ -1,3 +1,6 @@
+[![Dependabot Updates](https://github.com/navicore/regexgen-rs/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/navicore/regexgen-rs/actions/workflows/dependabot/dependabot-updates)
+[![Rust CI](https://github.com/navicore/regexgen-rs/actions/workflows/rust-ci.yml/badge.svg)](https://github.com/navicore/regexgen-rs/actions/workflows/rust-ci.yml)
+
 # RegexGen - Topic Annotation Tool
 
 A WebAssembly-powered tool for creating regex patterns from text selections. Built with Rust and designed with Verint-inspired styling.
