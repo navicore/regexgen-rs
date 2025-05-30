@@ -44,38 +44,6 @@
             font-weight: 500;
         }
 
-        .selection-mode {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-        }
-
-        .selection-mode label {
-            color: white;
-            margin: 0;
-        }
-
-        .mode-toggle {
-            display: flex;
-            background: rgba(255,255,255,0.2);
-            border-radius: 4px;
-            padding: 2px;
-        }
-
-        .mode-toggle button {
-            background: none;
-            border: none;
-            color: white;
-            padding: 0.5rem 1rem;
-            cursor: pointer;
-            border-radius: 2px;
-            transition: background 0.2s;
-        }
-
-        .mode-toggle button.active {
-            background: white;
-            color: var(--verint-blue);
-        }
 
         .container {
             max-width: 1600px;
@@ -435,13 +403,6 @@
 <body>
     <div class="header">
         <h1>RegexGen - Pattern Builder</h1>
-        <div class="selection-mode">
-            <label>Selection Mode:</label>
-            <div class="mode-toggle">
-                <button id="modeWord" onclick="setMode('word')">Word</button>
-                <button id="modeSequence" class="active" onclick="setMode('sequence')">Sequence</button>
-            </div>
-        </div>
     </div>
 
     <div class="container">
@@ -450,8 +411,7 @@
             
             <div class="instructions">
                 <h3>How to build patterns:</h3>
-                <p><strong>Sequence Mode:</strong> Click words to select them. Pattern will match words in the order they appear in the text. Non-adjacent selections create automatic gaps.</p>
-                <p><strong>Word Mode:</strong> Click multiple words to create an OR pattern (coming soon).</p>
+                <p>Click words to select them. Adjacent selections become phrases. Non-adjacent selections create AND patterns that match both parts with anything in between.</p>
             </div>
 
             <textarea id="textInput" placeholder="Paste or type your text here..."></textarea>
@@ -495,7 +455,6 @@
         import init, { PatternBuilder, get_word_at_position, get_words_from_text } from './pkg/regexgen_rs.js';
 
         let builder;
-        let currentMode = 'sequence';
         let wordElements = [];
         let selectedWords = [];
 
@@ -655,11 +614,10 @@
             const word = wordElements[wordIndex];
             if (!word) return;
             
-            if (currentMode === 'sequence') {
-                // Check if word is already selected
-                const existingIndex = selectedWords.findIndex(s => s.word_index === wordIndex);
-                
-                if (existingIndex >= 0) {
+            // Check if word is already selected
+            const existingIndex = selectedWords.findIndex(s => s.word_index === wordIndex);
+            
+            if (existingIndex >= 0) {
                     // If clicking on a selected word in a phrase, remove the entire phrase
                     const sortedWords = [...selectedWords].sort((a, b) => a.word_index - b.word_index);
                     let removeFrom = existingIndex;
@@ -702,10 +660,9 @@
                     builder.add_selection(word.text, word.start_index, word.end_index, word.word_index);
                 }
                 
-                // Re-render to update selection display
-                renderTextWithWords(document.getElementById('textInput').value);
-                updatePatternPreview();
-            }
+            // Re-render to update selection display
+            renderTextWithWords(document.getElementById('textInput').value);
+            updatePatternPreview();
         };
 
         function updatePatternPreview() {
@@ -778,15 +735,6 @@
             textInput.focus();
             
             // Clear selections when editing
-            clearSelections();
-        };
-
-        window.setMode = function(mode) {
-            currentMode = mode;
-            document.querySelectorAll('.mode-toggle button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.getElementById('mode' + mode.charAt(0).toUpperCase() + mode.slice(1)).classList.add('active');
             clearSelections();
         };
 

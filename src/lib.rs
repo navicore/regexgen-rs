@@ -1,7 +1,6 @@
 use wasm_bindgen::prelude::*;
-use web_sys::{console, HtmlTextAreaElement, HtmlInputElement, HtmlButtonElement, HtmlDivElement, Selection, Range, Storage};
+use web_sys::{console, Storage};
 use serde::{Serialize, Deserialize};
-use std::collections::HashSet;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(tag = "type")]
@@ -137,14 +136,6 @@ impl Pattern {
 pub struct PatternBuilder {
     patterns: Vec<Pattern>,
     current_selections: Vec<SelectionSpan>,
-    selection_mode: SelectionMode,
-}
-
-#[derive(Clone, Copy)]
-pub enum SelectionMode {
-    Word,
-    Sequence,
-    Pattern,
 }
 
 #[wasm_bindgen]
@@ -158,7 +149,6 @@ impl PatternBuilder {
         PatternBuilder {
             patterns,
             current_selections: Vec::new(),
-            selection_mode: SelectionMode::Sequence,
         }
     }
 

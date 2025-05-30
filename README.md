@@ -38,27 +38,32 @@ A WebAssembly-powered tool for creating regex patterns from text selections. Bui
 
 ## Usage
 
-1. **Creating Topics**:
+1. **Creating Patterns**:
    - Paste or type text in the main text area
-   - Select words by clicking/double-clicking or highlighting
-   - Enter a topic name
-   - Click "Generate Regex" to create and save the topic
+   - Click words to select them:
+     - Adjacent selections become phrases (matched as exact strings)
+     - Non-adjacent selections create AND patterns (both must exist)
+   - Enter a pattern name
+   - Click "Save Pattern" to create and save
 
-2. **Testing Topics**:
-   - Select a saved topic from the dropdown
-   - Enter test text in the main area
-   - Click "Test Topic" to see matches
+2. **Testing Patterns**:
+   - Click "Test" button next to any saved pattern
+   - Results appear in the Test Results panel
+   - Matches are highlighted in yellow
 
-3. **Managing Topics**:
-   - View all saved topics in the sidebar
-   - Test or delete topics using the action buttons
+3. **Managing Patterns**:
+   - View all saved patterns in the sidebar
+   - Each pattern shows its structure visually
+   - Delete patterns using the Delete button
 
 ## Future Enhancements
 
-- Support for phrase selection (multiple words)
-- AND/AND NOT logic for combining patterns
+- Topics: Collections of patterns grouped together
+- Pattern composition: Creating patterns from other patterns
+- NOT logic for exclusion patterns
 - Text history management
 - Export/import functionality
+- OR patterns (alternative word matching)
 
 ## Technical Details
 
