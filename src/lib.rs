@@ -97,12 +97,14 @@ impl Pattern {
                         sub_patterns.join("|")
                     }
                     CompositeOperator::And => {
-                        // For AND, we need to use lookahead assertions
-                        let sub_patterns: Vec<String> = patterns
-                            .iter()
-                            .map(|p| format!("(?=.*{})", p.to_regex()))
-                            .collect();
-                        format!("{}.*", sub_patterns.join(""))
+                        // For AND, all patterns must match somewhere in the text
+                        // We'll use positive lookahead from the start to ensure all patterns exist
+                        let mut lookaheads = Vec::new();
+                        for pattern in patterns {
+                            lookaheads.push(format!("(?=.*{})", pattern.to_regex()));
+                        }
+                        // After all lookaheads, match the entire string
+                        format!("^{}.*$", lookaheads.join(""))
                     }
                     CompositeOperator::Not => {
                         // NOT is implemented as negative lookahead
@@ -327,6 +329,54 @@ impl PatternBuilder {
             self.current_selections.remove(index);
         }
     }
+
+    pub fn create_composite_pattern(&mut self, name: String, base_operator: String, pattern_indices: Vec<usize>, operators: Vec<String>) -> Result<String, JsValue> {
+        if pattern_indices.is_empty() {
+            return Err(JsValue::from_str("No patterns selected"));
+        }
+
+        if pattern_indices.len() != operators.len() {
+            return Err(JsValue::from_str("Pattern indices and operators must have same length"));
+        }
+
+        let mut sub_patterns = Vec::new();
+
+        for (idx, op) in pattern_indices.iter().zip(operators.iter()) {
+            if let Some(pattern) = self.patterns.get(*idx).cloned() {
+                if op == "NOT" {
+                    // Wrap pattern in NOT composite
+                    sub_patterns.push(Pattern::Composite {
+                        id: generate_id(),
+                        name: format!("NOT {}", pattern.get_name()),
+                        operator: CompositeOperator::Not,
+                        patterns: vec![pattern],
+                    });
+                } else {
+                    // Add pattern as-is for AND
+                    sub_patterns.push(pattern);
+                }
+            }
+        }
+
+        if sub_patterns.is_empty() {
+            return Err(JsValue::from_str("No valid patterns found"));
+        }
+
+        // Create the composite pattern
+        let composite = Pattern::Composite {
+            id: generate_id(),
+            name: name.clone(),
+            operator: CompositeOperator::And, // Topics use AND as base operator
+            patterns: sub_patterns,
+        };
+
+        let regex = composite.to_regex();
+        
+        // Store topic separately from patterns
+        save_topic_to_storage(&composite)?;
+
+        Ok(regex)
+    }
 }
 
 fn get_local_storage() -> Result<Storage, JsValue> {
@@ -359,6 +409,27 @@ fn generate_id() -> String {
     let timestamp = js_sys::Date::now() as u64;
     let random = (js_sys::Math::random() * 1000.0) as u64;
     format!("{}-{}", timestamp, random)
+}
+
+fn save_topic_to_storage(topic: &Pattern) -> Result<(), JsValue> {
+    let storage = get_local_storage()?;
+    
+    // Load existing topics
+    let mut topics = match storage.get_item("regexgen_topics") {
+        Ok(Some(json)) => {
+            serde_json::from_str::<Vec<Pattern>>(&json).unwrap_or_default()
+        }
+        _ => Vec::new()
+    };
+    
+    // Add new topic
+    topics.push(topic.clone());
+    
+    // Save back
+    let json = serde_json::to_string(&topics).map_err(|e| JsValue::from_str(&e.to_string()))?;
+    storage.set_item("regexgen_topics", &json)?;
+    
+    Ok(())
 }
 
 #[wasm_bindgen]
