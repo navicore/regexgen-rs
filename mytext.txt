@@ -1,0 +1,12 @@
+  Key Improvements:
+
+  1. Adjacent Word Grouping: When you select words that are next to each other, they're treated as a single phrase match. For example:
+    - Selecting "customer" then "service" creates "customer service" as one phrase
+  2. AND Logic for Non-Adjacent: When selections aren't adjacent, they create an AND pattern with flexible matching:
+    - Selecting "customer called" then skipping ahead to "order" creates: customer called AND order
+    - The regex uses .*? between them, meaning both must exist but with anything in between
+  3. Visual Feedback:
+    - Single words show as blue chips
+    - Phrases show as dark blue with quotes
+    - AND connectors clearly show the logical relationship
+  4. Updated Instructions: Now clearly explains that patterns match in text order, not selection order
