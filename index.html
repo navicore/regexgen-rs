@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RegexGen - Pattern Builder</title>
+    <!-- Ready for Topics: Collections of patterns will be added as a new panel -->
     <style>
         :root {
             --verint-blue: #0066CC;
@@ -391,7 +392,7 @@
         }
 
         .status-message {
-            margin-top: 1rem;
+            margin-bottom: 1rem;
             padding: 0.75rem;
             border-radius: 4px;
             font-size: 14px;
@@ -470,8 +471,6 @@
                 <button id="savePatternBtn" onclick="savePattern()">Save Pattern</button>
                 <button class="button-secondary" onclick="clearSelections()">Clear Selections</button>
             </div>
-
-            <div id="statusMessage" class="status-message"></div>
         </div>
 
         <div class="side-panel">
@@ -483,13 +482,9 @@
             </div>
 
             <div class="panel">
-                <div class="panel-header">Test Patterns</div>
-                <select id="patternSelect" style="width: 100%; padding: 0.5rem; margin-bottom: 1rem;">
-                    <option value="">Select a pattern to test</option>
-                </select>
-                <button onclick="testSelectedPattern()" style="width: 100%;">Test Pattern</button>
-                <div id="testResults" style="margin-top: 1rem; display: none;">
-                    <strong>Results:</strong>
+                <div class="panel-header">Test Results</div>
+                <div id="statusMessage" class="status-message"></div>
+                <div id="testResults" style="display: none;">
                     <div id="testResultsContent"></div>
                 </div>
             </div>
@@ -760,6 +755,8 @@
                 renderTextWithWords(document.getElementById('textInput').value);
                 updatePatternPreview();
                 loadPatterns();
+                // Hide test results when saving a new pattern
+                document.getElementById('testResults').style.display = 'none';
             } catch (error) {
                 showStatus('Error saving pattern: ' + error, 'error');
             }
@@ -796,10 +793,8 @@
         function loadPatterns() {
             const patterns = builder.get_patterns();
             const patternsList = document.getElementById('patternsList');
-            const patternSelect = document.getElementById('patternSelect');
             
             patternsList.innerHTML = '';
-            patternSelect.innerHTML = '<option value="">Select a pattern to test</option>';
             
             patterns.forEach((pattern, index) => {
                 // Create pattern item for list
@@ -842,12 +837,6 @@
                     </div>
                 `;
                 patternsList.appendChild(patternItem);
-                
-                // Add to select
-                const option = document.createElement('option');
-                option.value = index;
-                option.textContent = pattern.name;
-                patternSelect.appendChild(option);
             });
         }
 
@@ -880,6 +869,7 @@
             
             if (!text) {
                 showStatus('Please enter some text to test against', 'error');
+                document.getElementById('testResults').style.display = 'none';
                 return;
             }
             
@@ -888,19 +878,12 @@
             const pattern = patterns[index];
             
             if (matches && matches.length > 0) {
-                showStatus(`Found ${matches.length} matches for "${pattern.name}"`, 'success');
+                showStatus(`Found ${matches.length} match${matches.length > 1 ? 'es' : ''} for "${pattern.name}"`, 'success');
                 highlightMatches(text, matches);
+                document.getElementById('testResults').style.display = 'block';
             } else {
                 showStatus(`No matches found for "${pattern.name}"`, 'error');
-            }
-        };
-
-        window.testSelectedPattern = function() {
-            const select = document.getElementById('patternSelect');
-            const index = parseInt(select.value);
-            
-            if (!isNaN(index)) {
-                testPattern(index);
+                document.getElementById('testResults').style.display = 'none';
             }
         };
 
@@ -917,7 +900,6 @@
         };
 
         function highlightMatches(text, matches) {
-            const resultsEl = document.getElementById('testResults');
             const contentEl = document.getElementById('testResultsContent');
             
             let highlightedText = text;
@@ -933,8 +915,7 @@
                 offset += highlightedMatch.length - match.length;
             });
             
-            contentEl.innerHTML = `<pre style="white-space: pre-wrap; font-family: monospace; line-height: 1.6;">${highlightedText}</pre>`;
-            resultsEl.style.display = 'block';
+            contentEl.innerHTML = `<pre style="white-space: pre-wrap; font-family: monospace; line-height: 1.6; margin: 0;">${highlightedText}</pre>`;
         }
 
         function showStatus(message, type) {
@@ -943,9 +924,12 @@
             statusEl.className = `status-message status-${type}`;
             statusEl.style.display = 'block';
             
-            setTimeout(() => {
-                statusEl.style.display = 'none';
-            }, 3000);
+            // Don't auto-hide for test results
+            if (!message.includes('match')) {
+                setTimeout(() => {
+                    statusEl.style.display = 'none';
+                }, 3000);
+            }
         }
 
         function escapeHtml(text) {
