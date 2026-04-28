@@ -1,3 +1,8 @@
+<!-- ghmig:moved -->
+> **This repository has moved to [https://git.navicore.tech/navicore/regexgen-rs](https://git.navicore.tech/navicore/regexgen-rs).**
+>
+> The GitHub copy is archived and no longer maintained.
+
 [![Dependabot Updates](https://github.com/navicore/regexgen-rs/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/navicore/regexgen-rs/actions/workflows/dependabot/dependabot-updates)
 [![Rust CI](https://github.com/navicore/regexgen-rs/actions/workflows/rust-ci.yml/badge.svg)](https://github.com/navicore/regexgen-rs/actions/workflows/rust-ci.yml)
 
